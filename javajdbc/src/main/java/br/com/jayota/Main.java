@@ -172,17 +172,27 @@ public class Main {
                 System.out.println("Banco conectado!");
                 System.out.println();
 
-                Scanner scanner = new Scanner(System.in);
-                System.out.println("Coloque o ID do cliente: ");
-                String id_cliente = scanner.nextLine();
-                var sql = "DELETE FROM cliente WHERE id_cliente = " + id_cliente;
-                try(Statement stmt = connection.createStatement()){
-                    stmt.executeUpdate(sql);
+                Scanner scanner = new Scanner(System.in); // leio entrada
+                String nome_cliente = null; // defino a variavel do nome vazia
+                System.out.println("Coloque o ID do cliente: "); // solicito o id
+                String id_cliente = scanner.nextLine(); // leio o id inserido no input
+
+                var sqlSelect = "SELECT nome FROM cliente WHERE id_cliente = ?"; // dou um select no nome conforme o id do cliente
+        try (PreparedStatement stmtSelect = connection.prepareStatement(sqlSelect)) { // preparo a conexão do envio sql
+            stmtSelect.setString(1, id_cliente); // substitui a primeira "?" pelo "id" do cliente
+            ResultSet result = stmtSelect.executeQuery(); // executo o sql
+            if(result.next()) { // se houver pelo menos uma linha de resultado
+                nome_cliente = result.getString("nome"); // pego o nome do cliente de acordo com o nome da coluna
+            }
+        }
+                var sql = "DELETE FROM cliente WHERE id_cliente = " + id_cliente; // crio um sql de delete
+                try(Statement stmt = connection.createStatement()){ // preparo a conexão do envio sql
+                    stmt.executeUpdate(sql); // executo o sql
                 }
-                System.out.println("Cliente deletado com sucesso!");
-                scanner.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+                System.out.println("Cliente(" + nome_cliente + ") deletado(a) com sucesso!"); // mostro quem foi deletado e se foi com sucesso
+                scanner.close(); // fecho o scanner
+            } catch (SQLException e) { // caso não seja deletado com sucesso
+                e.printStackTrace(); // mostro o erro
             }
         }
 }
